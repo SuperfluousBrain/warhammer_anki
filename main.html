@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script>
+        function get_file(){
+            let file = document.getElementById('list_json');
+            if(file.files.length)
+            {
+                    let reader = new FileReader();
+                    reader.onload = function(e)
+                    {
+                        let list_json;
+                        try {
+                            list_json = JSON.parse(e.target.result); 
+                        } catch(exception){
+                            alert("Parsing that file didn't work. Are you sure you chose a .json file?");
+                            return;
+                        }
+                        process_file(list_json);
+                    };
+
+                    reader.readAsBinaryString(file.files[0]);
+            } else {
+                alert("You didn't choose a file");
+            }
+        }
+        function download(filename, text) {
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+        }
+        function escape_string(string){
+            let new_string = '"';
+            for(let i=0; i < string.length; i++){
+                if(string[i] === '"'){
+                    new_string += '"';
+                }
+                new_string += string[i];
+            }
+            new_string += '"';
+            return new_string;
+        }
+        function add_card(file_map, front_card, back_card){
+            file_map.set(front_card, back_card);
+        }
+        function parse_ability(profile, name, file_map){
+            if(profile.typeName != "Abilities") raise("not ability");
+            let ability_name = profile.name;
+            let ability_description = profile.characteristics[0].$text;
+            if (ability_name == "Leader"){
+                return;
+            }
+            if (ability_name.startsWith("Invulnerable")){
+                let key = `What are ${name}'s saves?`;
+                let save = file_map.get(key);
+                let invulnerability = ability_name.substring(19, 21);
+                invulnerability = invulnerability.replace("+", "++");
+                file_map.set(key, `${save} ${invulnerability}`);
+                return;
+            }
+            const ignored_abilities = [
+                "This model cannot be your Warlord",
+            ];
+            if(!ignored_abilities.includes(ability_description)){
+                add_card(file_map, `What does the ${name}'s ${ability_name} do?`, ability_description);
+            }
+        }
+        function parse_characteristics(characteristics, name, file_map){
+            if(characteristics === undefined) return;
+            for(let i=0; i<characteristics.length; i++){
+                let characteristic = characteristics[i];
+                
+                if(characteristic.name == "M"){
+                    var movement = characteristic.$text;
+                    add_card(file_map, `What is the ${name}'s movement?`, movement);
+                    continue;
+                }
+                if(characteristic.name == "T"){
+                    var toughness = characteristic.$text;
+                    add_card(file_map, `What is the ${name}'s toughness?`, toughness);
+                    continue;
+                }
+                if(characteristic.name == "SV"){
+                    var save = characteristic.$text;
+                    var invulnerability = "invuln broken";
+                    add_card(file_map, `What are ${name}'s saves?`, `${save}`);
+                    continue;
+                }
+                if(characteristic.name == "W"){
+                    var wounds = characteristic.$text;
+                    add_card(file_map, `How many wounds does ${name} have?`, wounds);
+                    continue;
+                }
+                if(characteristic.name == "LD"){
+                    var leadership = characteristic.$text;
+                    add_card(file_map, `What is the ${name}'s leadership?`, leadership);
+                    continue;
+                }
+                if(characteristic.name == "OC"){
+                    var objective_control = characteristic.$text;
+                    add_card(file_map, `What is the ${name}'s objective control?`, objective_control);
+                    continue;
+                }
+                if(characteristic.name == "Description"){
+                    let description = characteristic.$text;
+                    if(description.startsWith("This model can be attached")) continue;
+                    if(description.startsWith("This model cannot be your Warlord")) continue;
+                    continue;
+                }
+                if(characteristic.name == "Range"){
+                    var range = characteristic.$text;
+                    if(range !="Melee"){
+                        add_card(file_map, `What is the ${name}'s range?`, range);
+                    }
+                    continue;
+                }
+                if(characteristic.name == "A"){
+                    var attacks = characteristic.$text;
+                    add_card(file_map, `How many attacks does ${name}'s get?`, attacks);
+                    continue;
+                }
+                if(characteristic.name == "WS"){
+                    var weapon_skill = characteristic.$text;
+                    add_card(file_map, `What is the ${name}'s weapon skill?`, weapon_skill);
+                    continue;
+                }
+                if(characteristic.name == "BS"){
+                    var ballistic_skill = characteristic.$text;
+                    add_card(file_map, `What is the ${name}'s ballistic skill?`, ballistic_skill);
+                    continue;
+                }
+                if(characteristic.name == "S"){
+                    var strength = characteristic.$text;
+                    add_card(file_map, `What is the ${name}'s strength?`, strength);
+                    continue;
+                }
+                if(characteristic.name == "AP"){
+                    var armor_piercing = characteristic.$text;
+                    add_card(file_map, `What is the ${name}'s armor piercing?`, armor_piercing);
+                    continue;
+                }
+                if(characteristic.name == "D"){
+                    var damage = characteristic.$text;
+                    add_card(file_map, `What is the ${name}'s damage?`, damage);
+                    continue;
+                }
+                if(characteristic.name == "Keywords"){
+                    var keywords = characteristic.$text;
+                    add_card(file_map, `What keywords does ${name} have?`, keywords);
+                    continue;
+                }
+                if(characteristic.name == "Capacity"){
+                    var capacity = characteristic.$text;
+                    add_card(file_map, `What is the ${name}'s capacity?`, capacity);
+                    continue;
+                }
+                console.log("unknown characteristic" + characteristic.name);
+            }
+        }
+        function parse_profiles(profiles, name, file_map){
+            for(let i=0; i < profiles.length; i++){
+                if(profiles[i].typeName == "Abilities") {
+                    parse_ability(profiles[i], name, file_map);
+                    continue;
+                }
+                if(profiles[i].characteristics !== undefined){
+                    parse_characteristics(profiles[i].characteristics, name, file_map);
+                }
+            }
+        }
+        function parse_rules(rules, name, file_map){
+            const ignored_rules_names = [
+                "Anti-",
+                "Assault",
+                "Blast",
+                "Devastating Wounds",
+                "Extra-Attacks",
+                "Extra Attacks",
+                "Heavy",
+                "Indirect Fire",
+                "Lethal Hits",
+                "Melta",
+                "Pistol",
+                "Precision",
+                "Psychic",
+                "Ignores Cover",
+                "Sustained Hits",
+                "Torrent",
+                "Twin-Linked",
+                "Twin-linked",
+            ];
+            let rule_names = [];
+            for(let i=0; i < rules.length; i++){
+                let rules_name = rules[i].name;
+                if(!ignored_rules_names.includes(rules_name)){
+                    rule_names.push(rules_name);
+                }
+                if (rules_name.startsWith("Feel No Pain") && rules_name.length > 11){
+                    let key = `What are ${name}'s saves?`;
+                    let save = file_map.get(key);
+                    let fnp = rules_name.substring(13, 15);
+                    fnp = fnp.replace("+", "+++");
+                    file_map.set(key, `${save} ${fnp}`);
+                    return;
+                }
+                if (rules_name.startsWith("Deadly Demise")){
+                    let deadly_demise = rules_name.substring(14);
+                    file_map.set(`If ${name} has a deadly demise, how much damage does it do?`, `${deadly_demise}`);
+                }
+            }
+            let key = `What keywords does ${name} have?`;
+            if(rule_names.length > 0 && !file_map.has(key)){
+                for(let i=0; i< rule_names.length; i++){
+                    file_map.set(key, rule_names.join(", "));
+                }
+            }
+        }
+        function parse_selections(selections, old_name, file_map){
+            for(let j=0; j<selections.length; j++){
+                let selection = selections[j];
+                let name = selection.name;
+                if(name.length + 1 == old_name.length){
+                    if(old_name[old_name.length - 1] == "s"){
+                        old_name = "";
+                    }
+                }
+                if(old_name != "" && old_name != name){
+                    if(name.startsWith(old_name)){
+                        name = name.substring(old_name.length + 1);
+                    }
+                    name = `${old_name}'s ${name}`;
+                } 
+                if(selection.profiles !== undefined) parse_profiles(selection.profiles, name, file_map);
+                if(selection.selections !== undefined) parse_selections(selection.selections, name, file_map);
+                if(selection.rules !== undefined) parse_rules(selection.rules, name, file_map);
+            }
+        }
+        function process_file(list){
+            let selections = list["roster"]["forces"][0]["selections"];
+            let list_name = list.roster.name;
+            let file_map = new Map();
+            parse_selections(selections, "", file_map);
+            var file_contents = `#deck:${list_name}\n#html:true\n#notetype:basic\n#separator:|\n`;
+            file_map.forEach(function(value, key, map){
+                key   = escape_string(key);
+                value = escape_string(value);
+                file_contents += `${key}|${value}\n`;
+            });
+            download(`${list_name}.txt`, file_contents);
+
+        }
+    </script>
+    <title>40k List to Anki Converter</title>
+</head>
+
+<body>
+    <p>
+        This page converts a list that is in New Recruit's json format to flash cards that are usable by the Anki flashcard program. Memorizing your list's stats will save you clock time. Ankhi is the best flashcard program for the job.
+    </p>
+    <p><b>This isn't secure.</b> Don't choose a .json file you didn't download from New Recruit yourself.</p>
+    <form>
+        <label for="list_json">Your list in New Recruit's json format:</label>
+        <input type="file" id="list_json" name="List.json"><br><br>
+        <input type="button" onclick="get_file()" value="Download">
+    </form>
+</body>
+</html>
