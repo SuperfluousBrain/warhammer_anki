@@ -73,19 +73,19 @@
                 add_card(file_map, `What does the ${name}'s ${ability_name} do?`, ability_description);
             }
         }
-        function parse_characteristics(characteristics, name, file_map){
+        function parse_characteristics(characteristics, name, profile_name, file_map){
             if(characteristics === undefined) return;
             for(let i=0; i<characteristics.length; i++){
                 let characteristic = characteristics[i];
                 
                 if(characteristic.name == "M"){
                     var movement = characteristic.$text;
-                    add_card(file_map, `What is the ${name}'s movement?`, movement);
+                    add_card(file_map, `What is ${name}'s movement?`, movement);
                     continue;
                 }
                 if(characteristic.name == "T"){
                     var toughness = characteristic.$text;
-                    add_card(file_map, `What is the ${name}'s toughness?`, toughness);
+                    add_card(file_map, `What is ${name}'s toughness?`, toughness);
                     continue;
                 }
                 if(characteristic.name == "SV"){
@@ -101,12 +101,12 @@
                 }
                 if(characteristic.name == "LD"){
                     var leadership = characteristic.$text;
-                    add_card(file_map, `What is the ${name}'s leadership?`, leadership);
+                    add_card(file_map, `What is ${name}'s leadership?`, leadership);
                     continue;
                 }
                 if(characteristic.name == "OC"){
                     var objective_control = characteristic.$text;
-                    add_card(file_map, `What is the ${name}'s objective control?`, objective_control);
+                    add_card(file_map, `What is ${name}'s objective control?`, objective_control);
                     continue;
                 }
                 if(characteristic.name == "Description"){
@@ -118,48 +118,48 @@
                 if(characteristic.name == "Range"){
                     var range = characteristic.$text;
                     if(range !="Melee"){
-                        add_card(file_map, `What is the ${name}'s range?`, range);
+                        add_card(file_map, `What is ${name}'s range?`, range);
                     }
-                    continue;
-                }
-                if(characteristic.name == "A"){
-                    var attacks = characteristic.$text;
-                    add_card(file_map, `How many attacks does ${name}'s get?`, attacks);
-                    continue;
-                }
-                if(characteristic.name == "WS"){
-                    var weapon_skill = characteristic.$text;
-                    add_card(file_map, `What is the ${name}'s weapon skill?`, weapon_skill);
-                    continue;
-                }
-                if(characteristic.name == "BS"){
-                    var ballistic_skill = characteristic.$text;
-                    add_card(file_map, `What is the ${name}'s ballistic skill?`, ballistic_skill);
-                    continue;
-                }
-                if(characteristic.name == "S"){
-                    var strength = characteristic.$text;
-                    add_card(file_map, `What is the ${name}'s strength?`, strength);
-                    continue;
-                }
-                if(characteristic.name == "AP"){
-                    var armor_piercing = characteristic.$text;
-                    add_card(file_map, `What is the ${name}'s armor piercing?`, armor_piercing);
-                    continue;
-                }
-                if(characteristic.name == "D"){
-                    var damage = characteristic.$text;
-                    add_card(file_map, `What is the ${name}'s damage?`, damage);
-                    continue;
-                }
-                if(characteristic.name == "Keywords"){
-                    var keywords = characteristic.$text;
-                    add_card(file_map, `What keywords does ${name} have?`, keywords);
                     continue;
                 }
                 if(characteristic.name == "Capacity"){
                     var capacity = characteristic.$text;
-                    add_card(file_map, `What is the ${name}'s capacity?`, capacity);
+                    add_card(file_map, `What is ${name}'s capacity?`, capacity);
+                    continue;
+                }
+                if(characteristic.name == "A"){
+                    var attacks = characteristic.$text;
+                    add_card(file_map, `How many attacks does ${name}'s ${profile_name} get?`, attacks);
+                    continue;
+                }
+                if(characteristic.name == "WS"){
+                    var weapon_skill = characteristic.$text;
+                    add_card(file_map, `What is ${name}'s ${profile_name}'s weapon skill?`, weapon_skill);
+                    continue;
+                }
+                if(characteristic.name == "BS"){
+                    var ballistic_skill = characteristic.$text;
+                    add_card(file_map, `What is ${name}'s ${profile_name}'s ballistic skill?`, ballistic_skill);
+                    continue;
+                }
+                if(characteristic.name == "S"){
+                    var strength = characteristic.$text;
+                    add_card(file_map, `What is ${name}'s ${profile_name}'s strength?`, strength);
+                    continue;
+                }
+                if(characteristic.name == "AP"){
+                    var armor_piercing = characteristic.$text;
+                    add_card(file_map, `What is ${name}'s ${profile_name}'s armor piercing?`, armor_piercing);
+                    continue;
+                }
+                if(characteristic.name == "D"){
+                    var damage = characteristic.$text;
+                    add_card(file_map, `What is ${name}'s ${profile_name}'s damage?`, damage);
+                    continue;
+                }
+                if(characteristic.name == "Keywords"){
+                    var keywords = characteristic.$text;
+                    add_card(file_map, `What keywords does ${name} ${profile_name} have?`, keywords);
                     continue;
                 }
                 console.log("unknown characteristic" + characteristic.name);
@@ -172,7 +172,7 @@
                     continue;
                 }
                 if(profiles[i].characteristics !== undefined){
-                    parse_characteristics(profiles[i].characteristics, name, file_map);
+                    parse_characteristics(profiles[i].characteristics, name, profiles[i].name, file_map);
                 }
             }
         }
@@ -227,17 +227,9 @@
             for(let j=0; j<selections.length; j++){
                 let selection = selections[j];
                 let name = selection.name;
-                if(name.length + 1 == old_name.length){
-                    if(old_name[old_name.length - 1] == "s"){
-                        old_name = "";
-                    }
+                if(old_name != ''){
+                    name = old_name;
                 }
-                if(old_name != "" && old_name != name){
-                    if(name.startsWith(old_name)){
-                        name = name.substring(old_name.length + 1);
-                    }
-                    name = `${old_name}'s ${name}`;
-                } 
                 if(selection.profiles !== undefined) parse_profiles(selection.profiles, name, file_map);
                 if(selection.selections !== undefined) parse_selections(selection.selections, name, file_map);
                 if(selection.rules !== undefined) parse_rules(selection.rules, name, file_map);
