@@ -227,6 +227,7 @@
             for(let j=0; j<selections.length; j++){
                 let selection = selections[j];
                 let name = selection.name;
+                if(name == "Detachment") continue;
                 if(old_name != ''){
                     name = old_name;
                 }
