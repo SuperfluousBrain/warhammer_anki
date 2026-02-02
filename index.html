@@ -66,6 +66,11 @@
                 file_map.set(key, `${save} ${invulnerability}`);
                 return;
             }
+            const re = new RegExp(/Damaged: 1-(?<start>\d+) /, "i");
+            if(ability_name.startsWith("Damaged:")){
+                let bracketing_starts = re.exec(ability_name).groups["start"];
+                add_card(file_map, `When does the ${name} get damaged?`, bracketing_starts);
+            }
             const ignored_abilities = [
                 "This model cannot be your Warlord",
             ];
