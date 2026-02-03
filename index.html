@@ -120,16 +120,16 @@
                     if(description.startsWith("This model cannot be your Warlord")) continue;
                     continue;
                 }
-                if(characteristic.name == "Range"){
-                    var range = characteristic.$text;
-                    if(range !="Melee"){
-                        add_card(file_map, `What is ${name}'s range?`, range);
-                    }
-                    continue;
-                }
                 if(characteristic.name == "Capacity"){
                     var capacity = characteristic.$text;
                     add_card(file_map, `What is ${name}'s capacity?`, capacity);
+                    continue;
+                }
+                if(characteristic.name == "Range"){
+                    var range = characteristic.$text;
+                    if(range !="Melee"){
+                        add_card(file_map, `What is ${name}'s ${profile_name}'s range?`, range);
+                    }
                     continue;
                 }
                 if(characteristic.name == "A"){
