@@ -49,6 +49,8 @@
             return new_string;
         }
         function add_card(file_map, front_card, back_card){
+            if(front_card === undefined) return;
+            if(back_card === undefined) back_card = '';
             file_map.set(front_card, back_card);
         }
         function parse_ability(profile, name, file_map){
@@ -254,6 +256,7 @@
             }
         }
         function process_file(list){
+            try{
             let selections = list["roster"]["forces"][0]["selections"];
             let list_name = list.roster.name;
             let file_map = new Map();
@@ -265,6 +268,9 @@
                 file_contents += `${key}|${value}\n`;
             });
             download(`${list_name}.txt`, file_contents);
+        }catch(exception){
+            alert("Parsing this list threw an error. Ideally, email me the .json file mr.negative@gmail.com, and I'll get it fixed.");
+        }
 
         }
     </script>
