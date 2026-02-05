@@ -198,15 +198,22 @@
                 "Psychic",
                 "Ignores Cover",
                 "Sustained Hits",
+                "Synapse",
                 "Torrent",
                 "Twin-Linked",
                 "Twin-linked",
             ];
-            let rule_names = [];
+            //Core rules have a "page" number, faction abilities do not
+            let core_rules = [];
+            let faction_rules = [];
             for(let i=0; i < rules.length; i++){
                 let rules_name = rules[i].name;
                 if(!ignored_rules_names.includes(rules_name)){
-                    rule_names.push(rules_name);
+                    if(rules[i].page === undefined){
+                        faction_rules.push(rules_name);
+                    } else {
+                        core_rules.push(rules_name);
+                    }
                 }
                 if (rules_name.startsWith("Feel No Pain") && rules_name.length > 11){
                     let key = `What are ${name}'s saves?`;
@@ -214,17 +221,22 @@
                     let fnp = rules_name.substring(13, 15);
                     fnp = fnp.replace("+", "+++");
                     file_map.set(key, `${save} ${fnp}`);
-                    return;
                 }
                 if (rules_name.startsWith("Deadly Demise")){
                     let deadly_demise = rules_name.substring(14);
                     file_map.set(`If ${name} has a deadly demise, how much damage does it do?`, `${deadly_demise}`);
                 }
             }
-            let key = `What keywords does ${name} have?`;
-            if(rule_names.length > 0 && !file_map.has(key)){
-                for(let i=0; i< rule_names.length; i++){
-                    file_map.set(key, rule_names.join(", "));
+            let key = `What core rules does ${name} have?`;
+            if(core_rules.length > 0 && !file_map.has(key)){
+                for(let i=0; i< core_rules.length; i++){
+                    file_map.set(key, core_rules.join(", "));
+                }
+            }
+            key = `What faction rules does ${name} have?`;
+            if(faction_rules.length > 0 && !file_map.has(key)){
+                for(let i=0; i< faction_rules.length; i++){
+                    file_map.set(key, faction_rules.join(", "));
                 }
             }
         }
