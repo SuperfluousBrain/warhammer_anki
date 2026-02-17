@@ -60,8 +60,9 @@
             if(back_card === undefined) back_card = '';
             file_map.set(front_card, back_card);
         }
-        function parse_ability(profile, name, file_map){
+        function parse_ability(profile, names, file_map){
             if(profile.typeName != "Abilities") raise("not ability");
+            let name = names.join("'s ");
             let ability_name = profile.name;
             let ability_description = profile.characteristics[0].$text;
             if (ability_name == "Leader"){
@@ -87,8 +88,25 @@
                 add_card(file_map, `What does the ${name}'s ${ability_name} do?`, ability_description);
             }
         }
-        function parse_characteristics(characteristics, name, profile_name, file_map){
+        function no_plural_push(array, new_string){
+            if(new_string.length != 0){
+                if(new_string[new_string.length -1] == 's'){
+                    new_string = new_string.slice(0, new_string.length - 1);
+                }
+            }
+            if(array.length == 0){
+                array.push(new_string);
+            } else if(array[array.length-1] != new_string){
+                array.push(new_string);
+            }
+            return array;
+        }
+        function parse_characteristics(characteristics, names, profile_name, file_map){
             if(characteristics === undefined) return;
+            if(names.length > 0 && names[names.length - 1] != profile_name){
+                names = no_plural_push(names, profile_name);
+            }
+            let name = names.join("'s ");
             for(let i=0; i<characteristics.length; i++){
                 let characteristic = characteristics[i];
                 
@@ -137,56 +155,56 @@
                 if(characteristic.name == "Range"){
                     var range = characteristic.$text;
                     if(range !="Melee"){
-                        add_card(file_map, `What is ${name}'s ${profile_name}'s range?`, range);
+                        add_card(file_map, `What is ${name}'s range?`, range);
                     }
                     continue;
                 }
                 if(characteristic.name == "A"){
                     var attacks = characteristic.$text;
-                    add_card(file_map, `How many attacks does ${name}'s ${profile_name} get?`, attacks);
+                    add_card(file_map, `How many attacks does ${name}'s get?`, attacks);
                     continue;
                 }
                 if(characteristic.name == "WS"){
                     var weapon_skill = characteristic.$text;
-                    add_card(file_map, `What is ${name}'s ${profile_name}'s weapon skill?`, weapon_skill);
+                    add_card(file_map, `What is ${name}'s weapon skill?`, weapon_skill);
                     continue;
                 }
                 if(characteristic.name == "BS"){
                     var ballistic_skill = characteristic.$text;
-                    add_card(file_map, `What is ${name}'s ${profile_name}'s ballistic skill?`, ballistic_skill);
+                    add_card(file_map, `What is ${name}'s ballistic skill?`, ballistic_skill);
                     continue;
                 }
                 if(characteristic.name == "S"){
                     var strength = characteristic.$text;
-                    add_card(file_map, `What is ${name}'s ${profile_name}'s strength?`, strength);
+                    add_card(file_map, `What is ${name}'s strength?`, strength);
                     continue;
                 }
                 if(characteristic.name == "AP"){
                     var armor_piercing = characteristic.$text;
-                    add_card(file_map, `What is ${name}'s ${profile_name}'s armor piercing?`, armor_piercing);
+                    add_card(file_map, `What is ${name}'s armor piercing?`, armor_piercing);
                     continue;
                 }
                 if(characteristic.name == "D"){
                     var damage = characteristic.$text;
-                    add_card(file_map, `What is ${name}'s ${profile_name}'s damage?`, damage);
+                    add_card(file_map, `What is ${name}'s damage?`, damage);
                     continue;
                 }
                 if(characteristic.name == "Keywords"){
                     var keywords = characteristic.$text;
-                    add_card(file_map, `What keywords does ${name} ${profile_name} have?`, keywords);
+                    add_card(file_map, `What keywords does ${name} have?`, keywords);
                     continue;
                 }
                 console.log("unknown characteristic" + characteristic.name);
             }
         }
-        function parse_profiles(profiles, name, file_map){
+        function parse_profiles(profiles, names, file_map){
             for(let i=0; i < profiles.length; i++){
                 if(profiles[i].typeName == "Abilities") {
-                    parse_ability(profiles[i], name, file_map);
+                    parse_ability(profiles[i], names, file_map);
                     continue;
                 }
                 if(profiles[i].characteristics !== undefined){
-                    parse_characteristics(profiles[i].characteristics, name, profiles[i].name, file_map);
+                    parse_characteristics(profiles[i].characteristics, names, profiles[i].name, file_map);
                 }
             }
         }
@@ -249,16 +267,18 @@
                 }
             }
         }
-        function parse_selections(selections, old_name, file_map){
+        function parse_selections(selections, names, file_map){
             for(let j=0; j<selections.length; j++){
                 let selection = selections[j];
                 let name = selection.name;
+                console.log(names, name);
                 if(name == "Detachment") continue;
-                if(old_name != ''){
-                    name = old_name;
-                }
-                if(selection.profiles !== undefined) parse_profiles(selection.profiles, name, file_map);
-                if(selection.selections !== undefined) parse_selections(selection.selections, name, file_map);
+                let names_copy = names.slice();
+                if(names[names.length - 1] != name){
+                    names_copy = no_plural_push(names_copy, name);
+                } 
+                if(selection.profiles !== undefined) parse_profiles(selection.profiles, names_copy, file_map);
+                if(selection.selections !== undefined) parse_selections(selection.selections, names_copy, file_map);
                 if(selection.rules !== undefined) parse_rules(selection.rules, name, file_map);
             }
         }
@@ -267,7 +287,7 @@
             let selections = list["roster"]["forces"][0]["selections"];
             let list_name = list.roster.name;
             let file_map = new Map();
-            parse_selections(selections, "", file_map);
+            parse_selections(selections, [], file_map);
             var file_contents = `#deck:${list_name}\n#html:true\n#notetype:basic\n#separator:|\n`;
             file_map.forEach(function(value, key, map){
                 key   = escape_string(key);
