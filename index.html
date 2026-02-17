@@ -12,7 +12,8 @@
                     {
                         let list_json;
                         try {
-                            list_json = JSON.parse(e.target.result); 
+                            let raw_text = e.target.result;
+                            list_json = JSON.parse(raw_text); 
                         } catch(exception){
                             alert("Parsing that file didn't work. Are you sure you chose a .json file?");
                             return;
@@ -46,6 +47,12 @@
                 new_string += string[i];
             }
             new_string += '"';
+            const weird_apostrophy_regex = /â/g;
+            new_string = new_string.replaceAll(weird_apostrophy_regex, "'");
+            const weird_whitespace_character_regex = /Â/g;
+            new_string = new_string.replaceAll(weird_whitespace_character_regex, " ");
+            const weird_arrow_regex = /â¤/g;
+            new_string = new_string.replaceAll(weird_arrow_regex, "");
             return new_string;
         }
         function add_card(file_map, front_card, back_card){
