@@ -193,6 +193,11 @@
                     add_card(file_map, `What keywords does ${name} have?`, keywords);
                     continue;
                 }
+                if(characteristic.name == "Effect"){
+                    var effect = characteristic.$text;
+                    add_card(file_map, `What effect does ${name} have?`, effect);
+                    continue;
+                }
                 raise("unknown characteristic" + characteristic.name);
             }
         }
