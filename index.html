@@ -69,11 +69,10 @@
                 return;
             }
             if (ability_name.startsWith("Invulnerable")){
-                let key = `What are ${name}'s saves?`;
-                let save = file_map.get(key);
+                let key = `What is ${name}'s invulnerability?`;
                 let invulnerability = ability_name.substring(19, 21);
                 invulnerability = invulnerability.replace("+", "++");
-                file_map.set(key, `${save} ${invulnerability}`);
+                file_map.set(key, `${invulnerability}`);
                 return;
             }
             const re = new RegExp(/Damaged: 1-(?<start>\d+) /, "i");
@@ -121,8 +120,8 @@
                     continue;
                 }
                 if(characteristic.name == "SV"){
-                    var save = characteristic.$text;
-                    var invulnerability = "invuln broken";
+                    let save = characteristic.$text;
+                    let key = `What are ${name}'s saves?`;
                     add_card(file_map, `What are ${name}'s saves?`, `${save}`);
                     continue;
                 }
@@ -194,7 +193,7 @@
                     add_card(file_map, `What keywords does ${name} have?`, keywords);
                     continue;
                 }
-                console.log("unknown characteristic" + characteristic.name);
+                raise("unknown characteristic" + characteristic.name);
             }
         }
         function parse_profiles(profiles, names, file_map){
@@ -243,11 +242,10 @@
                     }
                 }
                 if (rules_name.startsWith("Feel No Pain") && rules_name.length > 11){
-                    let key = `What are ${name}'s saves?`;
-                    let save = file_map.get(key);
+                    let key = `What is ${name}'s feel no pain?`;
                     let fnp = rules_name.substring(13, 15);
                     fnp = fnp.replace("+", "+++");
-                    file_map.set(key, `${save} ${fnp}`);
+                    file_map.set(key, `${fnp}`);
                 }
                 if (rules_name.startsWith("Deadly Demise")){
                     let deadly_demise = rules_name.substring(14);
@@ -271,7 +269,6 @@
             for(let j=0; j<selections.length; j++){
                 let selection = selections[j];
                 let name = selection.name;
-                console.log(names, name);
                 if(name == "Detachment") continue;
                 let names_copy = names.slice();
                 if(names[names.length - 1] != name){
